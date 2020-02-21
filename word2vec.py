@@ -6,7 +6,7 @@ import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior() 
 
 # Raw text to extract data from.
-text = "Who's wishing that? My cousin Westmorland? No, my dear cousin, if we are marked down to die we are enough for our country to lose, and if marked down to live, the fewer the men the greater the share of honour. For the love of God, don't wish for one man more. By Jove, I'm not interested in gold, nor do I care who eats at my expense. It doesn't bother me who wears my clothes. Such outward things don't come into my ambitions. But if it is a sin to long for honour I am the most offending soul alive. No, indeed, my cousin, don't wish for another man from England. God's peace, I wouldn't lose as much honour as the share one man would take from me. No, don't wish for one more. Rather proclaim to my army, Westmorland, that anyone who doesn't have the stomach for this fight should leave now. He will be guaranteed free passage and travel money will be put in his purse. We would not like to die with any man who lacks the comradeship to die with us. This day is called the Feast of Crispian. He who outlives this day and gets home safely to reach old age will yearly on its anniversary celebrate with his neighbours and say, 'Tomorrow is Saint Crispian.' Then he will roll up his sleeve and show his scars and say 'I got these wounds on Crispin's day.' Old men are forgetful, but even if he remembers nothing else he'll remember, with embroideries, what feats he did that day. Then our names, as familiar in his mouth as household words – Harry the King, Bedford and Exeter, Warwick and Talbot, Salisbury and Gloucester – will be remembered in their toasts. This good man will teach his son, and Crispin Crispian will never pass from today until the end of the world without us being remembered: we few; we happy few; we band of brothers! The man who sheds his blood with me shall be my brother; however humble he may be, this day will elevate his status. And gentlemen in England, still lying in their beds, will think themselves accursed because they were not here, and be in awe while anyone speaks who fought with us upon Saint Crispin's day.'"
+text = "queen woman. woman queen. queen royal. king man. man king. king royal."
 
 # List of all sentences in text.
 sentences = [s.lower().translate(str.maketrans('','',string.punctuation)).split() for s in text.split('.')]
@@ -77,7 +77,7 @@ LEARNING_RATE = 0.1
 optimizer = tf.train.GradientDescentOptimizer(LEARNING_RATE).minimize(loss)
 
 # Number of iterations to train with.
-ITERATIONS = 100
+ITERATIONS = 1000
 
 # Training network.
 for _ in range(ITERATIONS):
@@ -89,7 +89,7 @@ vectors = np.array(session.run(w1+b1))
 
 # Returns the cosine similarity between vectors v1 and v2.
 def cosine_similarity(v1,v2):
-    return np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2))
+    return np.dot(v1,v2) / (np.linalg.norm(v1)*np.linalg.norm(v2))
 
 # Returns a sorted list of the words that are most similar to the word 
 # represented by vector. (most_similar(vectors[word2int[word]])[0] == word)
@@ -98,4 +98,14 @@ def most_similar(vector):
     sorted_sims = sorted(sims,key=(lambda x: x[1]),reverse=True)
     return [int2word[index] for index,_ in sorted_sims]
 
-print(most_similar(vectors[word2int["england"]]))
+# Returns the word d such that a is to b as c is to d, where a, b, and c are words.
+def is_to_as_is_to(a,b,c):
+    v = vectors[word2int[b]] - vectors[word2int[a]] + vectors[word2int[c]]
+    d = [word for word in most_similar(v) if word not in [a,b,c]][0]
+    return d
+
+# Print results.
+queen = is_to_as_is_to("man","king","woman")
+king = is_to_as_is_to("woman","queen","man")
+print(queen)
+print(king)
