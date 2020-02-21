@@ -43,8 +43,8 @@ x_train = np.array([one_hot(word2int[word[0]]) for word in data])
 y_train = np.array([one_hot(word2int[word[1]]) for word in data])
 
 # Placeholders for the input and output layers.
-x = tf.placeholder(tf.float32, shape=(None,VOCAB_SIZE))
-y = tf.placeholder(tf.float32, shape=(None,VOCAB_SIZE))
+x = tf.placeholder(tf.float32,shape=(None,VOCAB_SIZE))
+y = tf.placeholder(tf.float32,shape=(None,VOCAB_SIZE))
 
 # Dimension of embeddings.
 DIMENSIONALITY = 100
@@ -77,12 +77,12 @@ LEARNING_RATE = 0.1
 optimizer = tf.train.GradientDescentOptimizer(LEARNING_RATE).minimize(loss)
 
 # Number of iterations to train with.
-ITERATIONS = 1000
+ITERATIONS = 100
 
 # Training network.
 for _ in range(ITERATIONS):
-    session.run(optimizer,feed_dict={x:x_train, y:y_train})    
-    print('Loss: ',session.run(loss,feed_dict={x:x_train, y:y_train}))
+    session.run(optimizer,feed_dict={x:x_train,y:y_train})    
+    print("Loss:",session.run(loss,feed_dict={x:x_train,y:y_train}))
 
 # Word embeddings.
 vectors = np.array(session.run(w1+b1))
@@ -91,12 +91,11 @@ vectors = np.array(session.run(w1+b1))
 def cosine_similarity(v1,v2):
     return np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2))
 
-# Returns an ordered list of words in vocabulary that are most similar to word,
-# such that (most_similar(word))[0] = word.
-def most_similar(word):
-    # sims = enumerate(similarities(vectors[word2int[word]],vectors))
-    sims = enumerate(map(lambda v: cosine_similarity(vectors[word2int[word]],v),vectors))
+# Returns a sorted list of the words that are most similar to the word 
+# represented by vector. (most_similar(vectors[word2int[word]])[0] == word)
+def most_similar(vector):
+    sims = enumerate(map(lambda v: cosine_similarity(vector,v),vectors))
     sorted_sims = sorted(sims,key=(lambda x: x[1]),reverse=True)
     return [int2word[index] for index,_ in sorted_sims]
 
-print(most_similar('england'))
+print(most_similar(vectors[word2int["england"]]))
