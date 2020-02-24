@@ -6,10 +6,10 @@ import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior() 
 
 # Raw text to extract data from.
-text = "queen woman. woman queen. queen royal. king man. man king. king royal."
+text = "She is the Queen. The Queen is nice. He is a nice King." 
 
 # List of all sentences in text.
-sentences = [s.lower().translate(str.maketrans('','',string.punctuation)).split() for s in text.split('.')]
+sentences = [s.lower().translate(str.maketrans('','',string.punctuation)).split() for s in text.split(". ")]
 
 # Set of all words in text.
 vocabulary = {word for word in text.lower().translate(str.maketrans('','',string.punctuation)).split()}
@@ -28,7 +28,7 @@ CONTEXT_WINDOW = 5
 def contexts(sentence):
     indices = [index for index,_ in enumerate(sentence)]
     nbhs = map(lambda i: sentence[max(i-CONTEXT_WINDOW,0):min(i+CONTEXT_WINDOW,len(sentence))+1],indices)
-    nbs = list(map(lambda n: [[sentence[n[0]],w] for w in n[1] if sentence[n[0]]!=w],enumerate(nbhs)))
+    nbs = map(lambda n: [[sentence[n[0]],w] for w in n[1] if sentence[n[0]]!=w],enumerate(nbhs))
     return list(itertools.chain(*nbs))
 
 # List of pairs [word,context_word] for every word in text.
@@ -36,18 +36,18 @@ data = list(itertools.chain(*(map(contexts,sentences))))
 
 # Returns a OneHot vector of dimension VOCAB_SIZE of the word at the corresponding index.
 def one_hot(index): 
-    return np.array([(1.0 if i == index else 0.0) for i in range(VOCAB_SIZE)])
+    return [(1.0 if i == index else 0.0) for i in range(VOCAB_SIZE)]
 
 # Training examples.
-x_train = np.array([one_hot(word2int[word[0]]) for word in data])
-y_train = np.array([one_hot(word2int[word[1]]) for word in data])
+x_train = [one_hot(word2int[pair[0]]) for pair in data]
+y_train = [one_hot(word2int[pair[1]]) for pair in data]
 
 # Placeholders for the input and output layers.
 x = tf.placeholder(tf.float32,shape=(None,VOCAB_SIZE))
 y = tf.placeholder(tf.float32,shape=(None,VOCAB_SIZE))
 
 # Dimension of embeddings.
-DIMENSIONALITY = 100
+DIMENSIONALITY = 5
 
 # Weights and biases of the input layer.
 w1 = tf.Variable(tf.random_normal([VOCAB_SIZE,DIMENSIONALITY]))
@@ -105,7 +105,7 @@ def is_to_as_is_to(a,b,c):
     return d
 
 # Print results.
-queen = is_to_as_is_to("man","king","woman")
-king = is_to_as_is_to("woman","queen","man")
+queen = is_to_as_is_to("he","king","she")
+king = is_to_as_is_to("she","queen","he")
 print(queen)
 print(king)
